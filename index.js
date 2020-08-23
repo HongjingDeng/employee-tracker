@@ -86,7 +86,30 @@ function viewAllEmp(){
 
 //view all employee by Department
 function viewAllEmpByDept(){
+    let deptArr = [];
+    connectionQuery('SELECT name FROM department')
+    .then(value=>{
+        deptQuery = value;
+        for (i=0; i<value.length;i++){
+            deptArr.push(value[i].name);
+        }
+    }).then(()=>{
+        inquirer.prompt({
+            name:"department",
+            type: "list",
+            message: "Which department would you like to search?",
+            choices: deptArr
+        })
+        .then((answer) => {
+            const query ='SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee LEFT JOIN role on employee.role_id =role.id LEFT JOIN department on role.department_id = department.id WHERE department.name = "${answer.department}"';
+            connectionQuery(query).then(res => {
+                console.log("\n");
+                console.table(res);
 
+                mainMenu();
+            })
+        })
+    })
 };
 // view all employees by role
 function viewAllEmpByRole(){
@@ -101,9 +124,9 @@ function addDept(){};
 // update employee role
 function updateEmpRole(){};
 
-connection.connect{(err)=>{
+connection.connect((err)=>{
     if(err) throw err;
     // start main menu funciton
     console.log("\n Welcome to employee tracker \n");
     mainMenu();
-}};
+});
