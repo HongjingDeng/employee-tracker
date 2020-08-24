@@ -3,9 +3,11 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const consoleTable = require("console.table");
 const util = require("util");
+//const connection = require("./db/schema.sql")
 
 const connection = mysql.createConnection({
     host: "local host",
+    port: 3306,
     user: "root",
     password: "hongjing123",
     database: "employees_DB"
@@ -114,6 +116,30 @@ function viewAllEmpByDept(){
 };
 // view all employees by role
 function viewAllEmpByRole(){
+    let roleArr = [];
+    connectionQuery('SELECT name FROM role')
+    .then(value=>{
+        deptQuery = value;
+        for (i=0; i<value.length;i++){
+            roleArr.push(value[i].name);
+        }
+    }).then(()=>{
+        inquirer.prompt({
+            name:"role",
+            type: "list",
+            message: "Which role would you like to search?",
+            choices: roleArr
+        })
+        .then((answer) => {
+            const query = //"SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department on role.department_id = department.id;";
+            connectionQuery(query).then(res => {
+                console.log("\n");
+                console.table(res);
+
+                mainMenu();
+            })
+        })
+    })
 
 };
 // add employee
@@ -254,7 +280,9 @@ function updateEmpRole(){
 };
 
 connection.connect((err)=>{
-    if(err) throw err;
+    if (err) {
+        throw err;
+    }
     // start main menu funciton
     console.log("\n Welcome to employee tracker \n");
     mainMenu();
